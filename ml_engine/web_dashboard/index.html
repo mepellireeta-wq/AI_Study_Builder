@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoSense — ML Pacing Analytics Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="navbar">
+            <div class="logo-box">
+                <div class="logo-icon"><i class="fa-solid fa-brain"></i></div>
+                <div class="logo-text">
+                    <h1>ChronoSense <span>ML Engine</span></h1>
+                    <p>Member 3: TTM Prediction & Pacing Analytics</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                <span class="dot"></span> Model Active (XGBoost Regressor)
+            </div>
+        </header>
+
+        <!-- Metrics Overview -->
+        <section class="metrics-grid">
+            <div class="metric-card">
+                <div class="card-icon blue"><i class="fa-solid fa-database"></i></div>
+                <div class="card-info">
+                    <span class="label">Synthetic Dataset</span>
+                    <h3 id="stat-records">1,000 Records</h3>
+                    <p class="sub">Generated & Calibrated</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="card-icon purple"><i class="fa-solid fa-diagram-project"></i></div>
+                <div class="card-info">
+                    <span class="label">ML Architecture</span>
+                    <h3>XGBoost Regressor</h3>
+                    <p class="sub">n_estimators=100, depth=4</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="card-icon green"><i class="fa-solid fa-bullseye"></i></div>
+                <div class="card-info">
+                    <span class="label">Model Metric (R²)</span>
+                    <h3>0.965 Score</h3>
+                    <p class="sub">High Prediction Precision</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="card-icon orange"><i class="fa-solid fa-scale-balanced"></i></div>
+                <div class="card-info">
+                    <span class="label">Pacing Metric</span>
+                    <h3>EER Formula</h3>
+                    <p class="sub">Actual TTM / User Est.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Interactive Workspace -->
+        <main class="dashboard-grid">
+            <!-- Left Panel: Interactive Predictor -->
+            <div class="panel glass-panel predictor-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-sliders"></i> TTM Simulator & Risk Estimator</h2>
+                    <p>Simulate student inputs to calculate Time-To-Mastery & EER</p>
+                </div>
+
+                <form id="prediction-form" onsubmit="event.preventDefault(); runPrediction();">
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="input-hours"><i class="fa-regular fa-clock"></i> Target Estimated Hours</label>
+                            <span class="value-display" id="val-hours">10 hrs</span>
+                        </div>
+                        <input type="range" id="input-hours" min="2" max="20" value="10" step="0.5" oninput="updateValues()">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="input-confidence"><i class="fa-solid fa-gauge"></i> Self Confidence Level (1-10)</label>
+                            <span class="value-display" id="val-confidence">5 / 10</span>
+                        </div>
+                        <input type="range" id="input-confidence" min="1" max="10" value="5" step="1" oninput="updateValues()">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="input-quiz"><i class="fa-solid fa-chart-line"></i> Past Quiz Score (%)</label>
+                            <span class="value-display" id="val-quiz">75%</span>
+                        </div>
+                        <input type="range" id="input-quiz" min="40" max="100" value="75" step="1" oninput="updateValues()">
+                    </div>
+                </form>
+
+                <!-- Prediction Results Display -->
+                <div class="result-box" id="result-box">
+                    <div class="result-top">
+                        <div class="res-item">
+                            <span class="res-title">User Estimated Time</span>
+                            <span class="res-val" id="res-target">10.0 hrs</span>
+                        </div>
+                        <div class="arrow-icon"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="res-item highlight">
+                            <span class="res-title">Predicted TTM (ML)</span>
+                            <span class="res-val" id="res-ttm">10.0 hrs</span>
+                        </div>
+                    </div>
+
+                    <div class="eer-badge-wrapper">
+                        <div class="eer-pill" id="eer-pill">
+                            <span id="res-eer-label">EER: 1.00</span>
+                        </div>
+                        <div class="risk-badge" id="risk-badge">Balanced Pacing</div>
+                    </div>
+
+                    <div class="recommendation-card" id="rec-card">
+                        <i class="fa-solid fa-lightbulb"></i>
+                        <p id="res-rec">Adjust sliders to see realistic study time recommendations.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Dynamic Analytics Charts -->
+            <div class="panel glass-panel analytics-panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-chart-pie"></i> Pacing Analytics & Insights</h2>
+                    <p>Visual breakdown of dataset and model performance</p>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h4>Estimation Error Ratio (EER) Risk Breakdown</h4>
+                        <div class="chart-container">
+                            <canvas id="eerDistributionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-card">
+                        <h4>XGBoost Feature Importance</h4>
+                        <div class="chart-container">
+                            <canvas id="featureImportanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>ChronoSense IEEE Hackathon — Member 3: ML Analytics Engine | XGBoost Regressor Model</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

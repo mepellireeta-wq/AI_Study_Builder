@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import InteractiveTimeline from './components/InteractiveTimeline';
 import AssignmentUploadModal from './components/AssignmentUploadModal';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { BookOpen, Clock, AlertCircle } from 'lucide-react';
+import { API } from './services/api';
 
 export default function App() {
+  const [apiStatus, setApiStatus] = useState('Checking...');
+
   const [topics] = useState([
     { id: 1, name: "Data Structures", target_hours: 10, completed_hours: 7, confidence: 6 },
     { id: 2, name: "Machine Learning", target_hours: 15, completed_hours: 5, confidence: 4 },
@@ -19,6 +22,18 @@ export default function App() {
   ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    async function checkBackend() {
+      const data = await API.getTopics();
+      if (data) {
+        setApiStatus('Successfully Connected');
+      } else {
+        setApiStatus('Local Mode (Offline)');
+      }
+    }
+    checkBackend();
+  }, []);
 
   const handleToggleStatus = (id) => {
     setTimeline(prev => prev.map(item => {
@@ -36,7 +51,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 p-6 md:p-10 font-sans">
-      <Navbar onOpenModal={() => setIsModalOpen(true)} />
+      <Navbar 
+        onOpenUpload={() => setIsModalOpen(true)} 
+        apiStatus={apiStatus} 
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">

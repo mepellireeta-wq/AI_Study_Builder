@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, X, FileText, AlertCircle } from 'lucide-react';
+import { Upload, X, FileText, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function AssignmentUploadModal({ isOpen, onClose, topics, onAddAssignment }) {
   const [title, setTitle] = useState('');
@@ -7,6 +7,7 @@ export default function AssignmentUploadModal({ isOpen, onClose, topics, onAddAs
   const [dueDate, setDueDate] = useState('');
   const [file, setFile] = useState(null);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
@@ -30,16 +31,24 @@ export default function AssignmentUploadModal({ isOpen, onClose, topics, onAddAs
       return;
     }
 
-    onAddAssignment({
-      id: Date.now(),
-      title,
-      topic,
-      date: dueDate,
-      status: 'Upcoming',
-      fileName: file ? file.name : null
-    });
+    setIsSubmitting(true);
 
-    onClose();
+    setTimeout(() => {
+      onAddAssignment({
+        id: Date.now(),
+        title,
+        topic,
+        date: dueDate,
+        status: 'Upcoming',
+        fileName: file ? file.name : null
+      });
+
+      setIsSubmitting(false);
+      setTitle('');
+      setDueDate('');
+      setFile(null);
+      onClose();
+    }, 300);
   };
 
   return (
@@ -113,15 +122,23 @@ export default function AssignmentUploadModal({ isOpen, onClose, topics, onAddAs
             <button
               type="button"
               onClick={onClose}
+              disabled={isSubmitting}
               className="w-1/2 py-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-700 text-sm font-medium transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="w-1/2 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all shadow-md"
+              disabled={isSubmitting}
+              className="w-1/2 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all shadow-md flex items-center justify-center gap-2"
             >
-              Submit Assignment
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Uploading...
+                </>
+              ) : (
+                'Submit Assignment'
+              )}
             </button>
           </div>
         </form>

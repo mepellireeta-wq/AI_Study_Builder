@@ -1,92 +1,124 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Navbar from './components/Navbar';
-import StatCards from './components/StatCards';
 import InteractiveTimeline from './components/InteractiveTimeline';
-import TopicManager from './components/TopicManager';
-import AnalyticsCharts from './components/AnalyticsCharts';
 import AssignmentUploadModal from './components/AssignmentUploadModal';
-import { fetchStudyPlan, fetchProjectStatus } from './services/api';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { BookOpen, Clock, AlertCircle } from 'lucide-react';
 
 export default function App() {
-  const [topics, setTopics] = useState([
-    { id: 1, name: "Data Structures", target_hours: 10, confidence: 6 },
-    { id: 2, name: "Machine Learning", target_hours: 15, confidence: 4 },
-    { id: 3, name: "DBMS & SQL", target_hours: 8, confidence: 8 },
-    { id: 4, name: "Python Programming", target_hours: 12, confidence: 7 }
+  const [topics] = useState([
+    { id: 1, name: "Data Structures", target_hours: 10, completed_hours: 7, confidence: 6 },
+    { id: 2, name: "Machine Learning", target_hours: 15, completed_hours: 5, confidence: 4 },
+    { id: 3, name: "Database Systems", target_hours: 12, completed_hours: 10, confidence: 8 },
   ]);
 
-  const [studyPlan, setStudyPlan] = useState(null);
-  const [loadingPlan, setLoadingPlan] = useState(true);
-  const [apiStatus, setApiStatus] = useState('');
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [timeline, setTimeline] = useState([
+    { id: 1, title: "Array & Linked List Review", date: "2026-07-28", topic: "Data Structures", status: "Completed" },
+    { id: 2, title: "Regression Model Assignment", date: "2026-07-30", topic: "Machine Learning", status: "In Progress" },
+    { id: 3, title: "SQL Normalization Quiz", date: "2026-08-02", topic: "Database Systems", status: "Upcoming" },
+  ]);
 
-  useEffect(() => {
-    // Load backend status and study schedule
-    const loadBackendData = async () => {
-      setLoadingPlan(true);
-      const statusData = await fetchProjectStatus();
-      setApiStatus(statusData?.Status || 'Online');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-      const planData = await fetchStudyPlan();
-      setStudyPlan(planData);
-      setLoadingPlan(false);
-    };
+  const handleToggleStatus = (id) => {
+    setTimeline(prev => prev.map(item => {
+      if (item.id === id) {
+        const nextStatus = item.status === 'Completed' ? 'In Progress' : 'Completed';
+        return { ...item, status: nextStatus };
+      }
+      return item;
+    }));
+  };
 
-    loadBackendData();
-  }, []);
-
-  const handleAddTopicFromModal = (newTopic) => {
-    setTopics(prev => [...prev, newTopic]);
+  const handleAddAssignment = (newAssignment) => {
+    setTimeline([newAssignment, ...timeline]);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white pb-16">
-      
-      {/* Top Header Navigation */}
-      <Navbar 
-        onOpenUpload={() => setIsUploadModalOpen(true)}
-        apiStatus={apiStatus}
-      />
+    <div className="min-h-screen bg-slate-900 text-slate-100 p-6 md:p-10 font-sans">
+      <Navbar onOpenModal={() => setIsModalOpen(true)} />
 
-      {/* Main Dashboard Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Metric Summary Cards */}
-        <StatCards topics={topics} />
-
-        {/* Two-Column Grid: Timeline & Topic Manager */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Left Column: Interactive Study Plan Timeline */}
-          <div className="lg:col-span-6">
-            <InteractiveTimeline 
-              studyPlan={studyPlan} 
-              loading={loadingPlan} 
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+              <div className="flex items-center gap-3 text-slate-400 text-sm">
+                <BookOpen className="text-indigo-400 w-5 h-5" /> Active Topics
+              </div>
+              <p className="text-2xl font-bold mt-2">{topics.length}</p>
+            </div>
+            <div className="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+              <div className="flex items-center gap-3 text-slate-400 text-sm">
+                <Clock className="text-emerald-400 w-5 h-5" /> Target Hours
+              </div>
+              <p className="text-2xl font-bold mt-2">
+                {topics.reduce((acc, t) => acc + t.target_hours, 0)} hrs
+              </p>
+            </div>
+            <div className="bg-slate-800/80 p-5 rounded-xl border border-slate-700">
+              <div className="flex items-center gap-3 text-slate-400 text-sm">
+                <AlertCircle className="text-amber-400 w-5 h-5" /> Avg Confidence
+              </div>
+              <p className="text-2xl font-bold mt-2">
+                {(topics.reduce((acc, t) => acc + t.confidence, 0) / topics.length).toFixed(1)} / 10
+              </p>
+            </div>
           </div>
 
-          {/* Right Column: Topic & Confidence Manager */}
-          <div className="lg:col-span-6">
-            <TopicManager 
-              topics={topics} 
-              setTopics={setTopics} 
-            />
+          <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+            <h2 className="text-xl font-bold mb-4 text-slate-200">Study Topics Breakdown</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {topics.map(t => (
+                <div key={t.id} className="p-4 bg-slate-900/60 rounded-lg border border-slate-700/80">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-semibold text-indigo-300 text-sm">{t.name}</h3>
+                    <span className="text-xs bg-slate-800 px-2 py-0.5 rounded border border-slate-700 text-slate-300">
+                      Conf: {t.confidence}/10
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mb-2">
+                    Progress: {t.completed_hours} / {t.target_hours} hrs
+                  </p>
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div 
+                      className="bg-indigo-500 h-2 rounded-full transition-all duration-300" 
+                      style={{ width: `${(t.completed_hours / t.target_hours) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
+          <div className="bg-slate-800/80 p-6 rounded-xl border border-slate-700">
+            <h2 className="text-xl font-bold mb-4 text-slate-200">Target vs Completed Hours</h2>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={topics}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="name" stroke="#94a3b8" />
+                  <YAxis stroke="#94a3b8" />
+                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#475569' }} />
+                  <Bar dataKey="target_hours" fill="#6366f1" name="Target Hours" />
+                  <Bar dataKey="completed_hours" fill="#10b981" name="Completed Hours" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
-        {/* Analytics & Performance Charts */}
-        <AnalyticsCharts topics={topics} />
+        <InteractiveTimeline 
+          timeline={timeline} 
+          onToggleStatus={handleToggleStatus} 
+        />
+      </div>
 
-      </main>
-
-      {/* Assignment Upload Modal */}
-      <AssignmentUploadModal 
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        onAddTopic={handleAddTopicFromModal}
+      <AssignmentUploadModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        topics={topics}
+        onAddAssignment={handleAddAssignment}
       />
-
     </div>
   );
 }

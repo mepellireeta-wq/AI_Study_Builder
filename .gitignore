@@ -1,0 +1,19 @@
+# Python virtualenv & cache
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Node / Frontend
+node_modules/
+dist/
+.vite/
+
+# Environment & secrets
+.env
+*.env
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/

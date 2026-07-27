@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 flask
+=======
+>>>>>>> 48a4695d722086dbe00ec892fddb07e52c8f45e5
 google-genai
 pillow
 python-dotenv

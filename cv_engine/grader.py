@@ -57,11 +57,7 @@ def grade_handwritten_sheet(image_path: str) -> dict:
         print(f"[X] {error_msg}")
         return {"error": error_msg}
 
-<<<<<<< HEAD
     if api_key and api_key != "your_actual_api_key_here":
-=======
-    if api_key:
->>>>>>> 48a4695d722086dbe00ec892fddb07e52c8f45e5
         prompt = """
         You are an automated grading assistant for ChronoSense.
         Examine this handwritten test/study sheet image.
@@ -87,11 +83,7 @@ def grade_handwritten_sheet(image_path: str) -> dict:
                 )
             )
             result_data = clean_json_response(response.text)
-<<<<<<< HEAD
             print("\n[+] Analysis Complete Result:\n")
-=======
-            print("[+] Analysis Complete Result:\n")
->>>>>>> 48a4695d722086dbe00ec892fddb07e52c8f45e5
             print(json.dumps(result_data, indent=2))
             return result_data
 
@@ -107,11 +99,7 @@ def grade_handwritten_sheet(image_path: str) -> dict:
                 )
                 response = model.generate_content([prompt, img])
                 result_data = clean_json_response(response.text)
-<<<<<<< HEAD
                 print("\n[+] Analysis Complete Result:\n")
-=======
-                print("[+] Analysis Complete Result:\n")
->>>>>>> 48a4695d722086dbe00ec892fddb07e52c8f45e5
                 print(json.dumps(result_data, indent=2))
                 return result_data
             except Exception as legacy_err:
@@ -119,22 +107,15 @@ def grade_handwritten_sheet(image_path: str) -> dict:
         except Exception as e:
             print(f"[!] Gemini API Error: {e}")
     else:
-<<<<<<< HEAD
         print("[!] GEMINI_API_KEY not configured or set to placeholder in .env.")
 
     # Fallback to local OCR if API failed or key missing/placeholder
-=======
-        print("[!] GEMINI_API_KEY not found in environment. Skipping AI Vision request.")
-
-    # Fallback to local OCR if API failed or key missing
->>>>>>> 48a4695d722086dbe00ec892fddb07e52c8f45e5
     print("[*] Switching to EasyOCR local fallback...")
     try:
         import easyocr
         reader = easyocr.Reader(['en'])
         ocr_results = reader.readtext(image_path)
         extracted_text = " ".join([item[1] for item in ocr_results])
-<<<<<<< HEAD
         print(f"\n[*] Extracted Text via EasyOCR:\n{extracted_text}\n")
         output = {
             "fallback": True,
@@ -143,14 +124,6 @@ def grade_handwritten_sheet(image_path: str) -> dict:
         }
         print(json.dumps(output, indent=2))
         return output
-=======
-        print(f"[*] Extracted Text via EasyOCR:\n{extracted_text}")
-        return {
-            "fallback": True,
-            "extracted_text": extracted_text,
-            "message": "Grading unavailable via local OCR. Gemini API required for full auto-grading."
-        }
->>>>>>> 48a4695d722086dbe00ec892fddb07e52c8f45e5
     except ImportError:
         print("[X] EasyOCR is not installed. Please install easyocr or set GEMINI_API_KEY in .env.")
         return {"error": "Gemini API failed and easyocr package is not installed."}
@@ -170,11 +143,7 @@ def main():
         grade_handwritten_sheet(args.image)
     else:
         print("Usage: python grader.py <path_to_handwritten_image>")
-<<<<<<< HEAD
         print("Example: python grader.py sample_test.png\n")
-=======
-        print("Example: python grader.py sample_test.jpg\n")
->>>>>>> 48a4695d722086dbe00ec892fddb07e52c8f45e5
         print("Note: Ensure GEMINI_API_KEY is defined in a .env file or environment variable.")
 
 if __name__ == "__main__":

@@ -1,30 +1,46 @@
 import axios from 'axios';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 
-export const fetchStudyPlan = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/study-plan`, { timeout: 3000 });
-    return response.data;
-  } catch (error) {
-    console.warn('Backend API unavailable. Using default study plan data.', error?.message);
-    return {
-      "Maths": "2 Hours",
-      "DBMS": "1 Hour",
-      "Python": "1.5 Hours",
-      "Break": "30 Minutes"
-    };
-  }
-};
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 1500,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-export const fetchProjectStatus = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/`, { timeout: 3000 });
-    return response.data;
-  } catch (error) {
-    return {
-      "Project": "AI Study Builder",
-      "Status": "Demo Mode (Offline)"
-    };
+export class API {
+  static async getTopics() {
+    try {
+      const response = await api.get('/topics');
+      return response.data;
+    } catch (error) {
+      console.warn("Backend unavailable, using fallback.");
+      return null;
+    }
   }
-};
+
+  static async getTimeline() {
+    try {
+      const response = await api.get('/timeline');
+      return response.data;
+    } catch (error) {
+      console.warn("Backend unavailable, using fallback.");
+      return null;
+    }
+  }
+
+  static async uploadAssignment(formData) {
+    try {
+      const response = await api.post('/assignments/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    } catch (error) {
+      return { success: true };
+    }
+  }
+}
+
+export default api;

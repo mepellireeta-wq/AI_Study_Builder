@@ -4,10 +4,10 @@ import pandas as pd
 
 MODEL_PATH = 'ttm_model.pkl' if os.path.exists('ttm_model.pkl') else 'models/ttm_model.pkl'
 
-def recommend_study_time(subject, difficulty, user_estimated_hours=5, confidence=5, quiz_score=75):
+def recommend_study_time(subject, difficulty, user_est=5.0, quiz_score=75.0, confidence=3):
     """
     ML-Driven Study Time Recommender (ChronoSense Member 3 ML Engine)
-    - Maps subject difficulty (High/Medium/Low) to parameter values if not specified.
+    - Maps subject difficulty (High/Medium/Low) to 1-5 scale if passed as string.
     - Uses trained XGBoost Regressor model to predict realistic Time-To-Mastery (TTM).
     """
     difficulty_map = {
@@ -16,15 +16,19 @@ def recommend_study_time(subject, difficulty, user_estimated_hours=5, confidence
         "Low": 1
     }
 
-    diff_val = difficulty_map.get(difficulty, 3)
+    if isinstance(difficulty, str):
+        diff_val = difficulty_map.get(difficulty, 3)
+    else:
+        diff_val = int(difficulty)
 
     if os.path.exists(MODEL_PATH):
         try:
             model = joblib.load(MODEL_PATH)
             input_df = pd.DataFrame([{
-                'target_hours': float(user_estimated_hours),
-                'confidence': int(confidence),
-                'quiz_score': float(quiz_score)
+                'user_est': float(user_est),
+                'difficulty': diff_val,
+                'quiz_score': float(quiz_score),
+                'confidence': int(confidence)
             }])
             predicted_ttm = float(model.predict(input_df)[0])
             predicted_ttm = max(0.5, round(predicted_ttm, 1))
@@ -33,12 +37,12 @@ def recommend_study_time(subject, difficulty, user_estimated_hours=5, confidence
             pass
 
     # Fallback heuristic
-    if difficulty == "High":
-        return "3 Hours"
-    elif difficulty == "Medium":
-        return "2 Hours"
+    if difficulty == "High" or diff_val >= 4:
+        return "3.0 Hours"
+    elif difficulty == "Medium" or diff_val == 3:
+        return "2.0 Hours"
     else:
-        return "1 Hour"
+        return "1.0 Hour"
 
 if __name__ == "__main__":
     print(f"Subject DBMS (High Difficulty): {recommend_study_time('DBMS', 'High')}")

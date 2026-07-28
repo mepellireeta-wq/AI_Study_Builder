@@ -9,29 +9,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function updateValues() {
     const hours = document.getElementById('input-hours').value;
-    const confidence = document.getElementById('input-confidence').value;
+    const difficulty = document.getElementById('input-difficulty').value;
     const quiz = document.getElementById('input-quiz').value;
+    const confidence = document.getElementById('input-confidence').value;
 
     document.getElementById('val-hours').innerText = `${hours} hrs`;
-    document.getElementById('val-confidence').innerText = `${confidence} / 10`;
+    document.getElementById('val-difficulty').innerText = `${difficulty} / 5`;
     document.getElementById('val-quiz').innerText = `${quiz}%`;
+    document.getElementById('val-confidence').innerText = `${confidence} / 5`;
 
     runPrediction();
 }
 
 function runPrediction() {
-    const targetHours = parseFloat(document.getElementById('input-hours').value);
-    const confidence = parseInt(document.getElementById('input-confidence').value);
+    const userEst = parseFloat(document.getElementById('input-hours').value);
+    const difficulty = parseInt(document.getElementById('input-difficulty').value);
     const quizScore = parseFloat(document.getElementById('input-quiz').value);
+    const confidence = parseInt(document.getElementById('input-confidence').value);
 
-    // Formula matching trained XGBoost model: actual_ttm = target_hours * (1.5 - confidence*0.04 - quiz_score*0.004)
-    const factor = 1.5 - (confidence * 0.04) - (quizScore * 0.004);
-    let predictedTTM = Math.round(targetHours * factor * 100) / 100;
+    // Exact PDF Formula: PTTM = User_Est * (1.0 + 0.15*Difficulty - 0.004*Quiz_Score + 0.08*(6-Confidence))
+    const factor = 1.0 + (0.15 * difficulty) - (0.004 * quizScore) + (0.08 * (6 - confidence));
+    let predictedTTM = Math.round(userEst * factor * 100) / 100;
     predictedTTM = Math.max(0.5, predictedTTM);
 
-    const eer = Math.round((predictedTTM / targetHours) * 100) / 100;
+    const eer = Math.round((predictedTTM / userEst) * 100) / 100;
 
-    document.getElementById('res-target').innerText = `${targetHours.toFixed(1)} hrs`;
+    document.getElementById('res-target').innerText = `${userEst.toFixed(1)} hrs`;
     document.getElementById('res-ttm').innerText = `${predictedTTM.toFixed(1)} hrs`;
     document.getElementById('res-eer-label').innerText = `EER Ratio: ${eer}`;
 
@@ -42,16 +45,16 @@ function runPrediction() {
 
     if (eer > 1.2) {
         riskBadge.classList.add('burnout');
-        riskBadge.innerText = 'Burnout Risk (Underestimating Time)';
-        recText.innerText = `You estimated ${targetHours}h, but predicted TTM is ${predictedTTM}h (EER: ${eer}). High risk of stress & rushing! Split this topic into multiple 45-min blocks.`;
+        riskBadge.innerText = 'Burnout Risk (Severe Underestimation)';
+        recText.innerText = `You estimated ${userEst}h, but predicted TTM is ${predictedTTM}h (EER: ${eer}). High risk of stress & rushing! Split this topic into multiple 45-min blocks.`;
     } else if (eer < 0.8) {
         riskBadge.classList.add('procrastination');
-        riskBadge.innerText = 'Procrastination Risk (Overestimating Effort)';
-        recText.innerText = `You estimated ${targetHours}h, but predicted TTM is only ${predictedTTM}h (EER: ${eer}). Topic is easier than you think! Start right now to conquer hesitation.`;
+        riskBadge.innerText = 'Procrastination Risk (Overestimation)';
+        recText.innerText = `You estimated ${userEst}h, but predicted TTM is only ${predictedTTM}h (EER: ${eer}). Topic is easier than you think! Start right now to conquer hesitation.`;
     } else {
         riskBadge.classList.add('balanced');
         riskBadge.innerText = 'Balanced Pacing';
-        recText.innerText = `Optimal estimate! Your self-judgment (${targetHours}h) closely aligns with realistic mastery time (${predictedTTM}h). Keep up this study cadence.`;
+        recText.innerText = `Optimal estimate! Your self-judgment (${userEst}h) closely aligns with realistic mastery time (${predictedTTM}h). Keep up this study cadence.`;
     }
 }
 
@@ -63,7 +66,7 @@ function initCharts() {
         data: {
             labels: ['Procrastination Risk (EER < 0.8)', 'Balanced Pacing (0.8-1.2)', 'Burnout Risk (EER > 1.2)'],
             datasets: [{
-                data: [280, 510, 210],
+                data: [240, 530, 230],
                 backgroundColor: ['#f59e0b', '#10b981', '#ef4444'],
                 borderWidth: 0
             }]
@@ -82,11 +85,11 @@ function initCharts() {
     featureChart = new Chart(ctx2, {
         type: 'bar',
         data: {
-            labels: ['Target Hours', 'Confidence Level', 'Quiz Score (%)'],
+            labels: ['User Estimated Hours', 'Subject Difficulty', 'Quiz Score (%)', 'Confidence Level'],
             datasets: [{
                 label: 'Relative Importance',
-                data: [0.65, 0.22, 0.13],
-                backgroundColor: ['#6366f1', '#06b6d4', '#10b981'],
+                data: [0.55, 0.22, 0.13, 0.10],
+                backgroundColor: ['#6366f1', '#06b6d4', '#10b981', '#f59e0b'],
                 borderRadius: 6
             }]
         },

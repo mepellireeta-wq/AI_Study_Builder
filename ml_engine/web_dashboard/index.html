@@ -36,7 +36,7 @@
                 <div class="card-info">
                     <span class="label">Synthetic Dataset</span>
                     <h3 id="stat-records">1,000 Records</h3>
-                    <p class="sub">Generated & Calibrated</p>
+                    <p class="sub">Generated across 5 Diff Levels</p>
                 </div>
             </div>
             <div class="metric-card">
@@ -44,14 +44,14 @@
                 <div class="card-info">
                     <span class="label">ML Architecture</span>
                     <h3>XGBoost Regressor</h3>
-                    <p class="sub">n_estimators=100, depth=4</p>
+                    <p class="sub">n_estimators=100, max_depth=5</p>
                 </div>
             </div>
             <div class="metric-card">
                 <div class="card-icon green"><i class="fa-solid fa-bullseye"></i></div>
                 <div class="card-info">
                     <span class="label">Model Metric (R²)</span>
-                    <h3>0.965 Score</h3>
+                    <h3>0.968 Score</h3>
                     <p class="sub">High Prediction Precision</p>
                 </div>
             </div>
@@ -77,18 +77,18 @@
                 <form id="prediction-form" onsubmit="event.preventDefault(); runPrediction();">
                     <div class="form-group">
                         <div class="label-row">
-                            <label for="input-hours"><i class="fa-regular fa-clock"></i> Target Estimated Hours</label>
-                            <span class="value-display" id="val-hours">10 hrs</span>
+                            <label for="input-hours"><i class="fa-regular fa-clock"></i> User Estimated Hours</label>
+                            <span class="value-display" id="val-hours">5.0 hrs</span>
                         </div>
-                        <input type="range" id="input-hours" min="2" max="20" value="10" step="0.5" oninput="updateValues()">
+                        <input type="range" id="input-hours" min="1" max="15" value="5" step="0.5" oninput="updateValues()">
                     </div>
 
                     <div class="form-group">
                         <div class="label-row">
-                            <label for="input-confidence"><i class="fa-solid fa-gauge"></i> Self Confidence Level (1-10)</label>
-                            <span class="value-display" id="val-confidence">5 / 10</span>
+                            <label for="input-difficulty"><i class="fa-solid fa-layer-group"></i> Topic Difficulty (1-5)</label>
+                            <span class="value-display" id="val-difficulty">3 / 5</span>
                         </div>
-                        <input type="range" id="input-confidence" min="1" max="10" value="5" step="1" oninput="updateValues()">
+                        <input type="range" id="input-difficulty" min="1" max="5" value="3" step="1" oninput="updateValues()">
                     </div>
 
                     <div class="form-group">
@@ -96,7 +96,15 @@
                             <label for="input-quiz"><i class="fa-solid fa-chart-line"></i> Past Quiz Score (%)</label>
                             <span class="value-display" id="val-quiz">75%</span>
                         </div>
-                        <input type="range" id="input-quiz" min="40" max="100" value="75" step="1" oninput="updateValues()">
+                        <input type="range" id="input-quiz" min="0" max="100" value="75" step="1" oninput="updateValues()">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label for="input-confidence"><i class="fa-solid fa-gauge"></i> Self Confidence Level (1-5)</label>
+                            <span class="value-display" id="val-confidence">3 / 5</span>
+                        </div>
+                        <input type="range" id="input-confidence" min="1" max="5" value="3" step="1" oninput="updateValues()">
                     </div>
                 </form>
 
@@ -105,12 +113,12 @@
                     <div class="result-top">
                         <div class="res-item">
                             <span class="res-title">User Estimated Time</span>
-                            <span class="res-val" id="res-target">10.0 hrs</span>
+                            <span class="res-val" id="res-target">5.0 hrs</span>
                         </div>
                         <div class="arrow-icon"><i class="fa-solid fa-arrow-right"></i></div>
                         <div class="res-item highlight">
                             <span class="res-title">Predicted TTM (ML)</span>
-                            <span class="res-val" id="res-ttm">10.0 hrs</span>
+                            <span class="res-val" id="res-ttm">5.0 hrs</span>
                         </div>
                     </div>
 

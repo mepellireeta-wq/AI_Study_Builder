@@ -9,7 +9,14 @@ export default function AssignmentUploadModal({ isOpen, onClose, topics, onAddAs
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  React.useEffect(() => {
+    if (!topic && topics && topics.length > 0) {
+      setTopic(topics[0].name);
+    }
+  }, [topics, topic]);
+
   if (!isOpen) return null;
+
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];

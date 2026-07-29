@@ -1,19 +1,22 @@
-# Python virtualenv & cache
+# Environment variables & secrets
+.env
+*.env
+
+# Python virtualenv & caches
 venv/
-.venv/
+ENV/
+env/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Node / Frontend
+# Node.js
 node_modules/
 dist/
 .vite/
 
-# Environment & secrets
-.env
-*.env
-
-# OS & IDE
-.DS_Store
-Thumbs.db
+# IDE & OS
 .vscode/
+.idea/
+.DS_Store

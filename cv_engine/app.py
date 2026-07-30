@@ -511,7 +511,14 @@ def grade_api():
     result = grade_handwritten_sheet(filepath)
     return jsonify(result)
 
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    print("CV ENGINE ERROR TRACEBACK:")
+    traceback.print_exc()
+    return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
+
 if __name__ == '__main__':
-    port = int(os.getenv("PORT", 8002))
+    port = int(os.getenv("PORT", 8005))
     print(f"🚀 ChronoSense CV Engine Web Server starting on http://localhost:{port}")
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)

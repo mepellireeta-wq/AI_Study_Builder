@@ -50,12 +50,12 @@ export default function Navbar({ onOpenUpload, apiStatus }) {
 
           {/* User Profile Avatar */}
           <div className="flex items-center space-x-3 pl-2 border-l border-slate-800">
-            <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-indigo-400 font-bold text-sm">
+            <div className="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-cyan-400 font-bold text-sm shadow-md">
               <User className="w-5 h-5" />
             </div>
             <div className="hidden md:block text-left">
-              <p className="text-sm font-semibold text-white leading-none">Rupa</p>
-              <p className="text-xs text-slate-400 mt-0.5">Frontend Developer</p>
+              <p className="text-sm font-semibold text-white leading-none">Student Portal</p>
+              <p className="text-xs text-cyan-400 font-medium mt-0.5">Active Workspace</p>
             </div>
           </div>
 

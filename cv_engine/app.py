@@ -512,5 +512,6 @@ def grade_api():
     return jsonify(result)
 
 if __name__ == '__main__':
-    print("🚀 ChronoSense CV Engine Web Server starting on http://localhost:5001")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    port = int(os.getenv("PORT", 8002))
+    print(f"🚀 ChronoSense CV Engine Web Server starting on http://localhost:{port}")
+    app.run(host='0.0.0.0', port=port, debug=False)

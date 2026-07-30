@@ -6,7 +6,10 @@ import AnalyticsCharts from './components/AnalyticsCharts';
 import InteractiveTimeline from './components/InteractiveTimeline';
 import FocusTimer from './components/FocusTimer';
 import AssignmentUploadModal from './components/AssignmentUploadModal';
-import { Sparkles, RefreshCw, LayoutDashboard, Sliders, BarChart3, Clock, CheckCircle } from 'lucide-react';
+import ArchitectureFlow from './components/ArchitectureFlow';
+import MLEngineCard from './components/MLEngineCard';
+import CVEngineCard from './components/CVEngineCard';
+import { Sparkles, RefreshCw, LayoutDashboard, Sliders, BarChart3, Clock, CheckCircle, Cpu, Eye } from 'lucide-react';
 import { API } from './services/api';
 
 const INITIAL_TOPICS = [
@@ -23,7 +26,7 @@ const INITIAL_TIMELINE = [
 
 export default function App() {
   const [apiStatus, setApiStatus] = useState('Checking...');
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'topics', 'analytics', 'focus'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'ml_engine', 'cv_engine', 'topics', 'analytics', 'focus'
   const [rebalanceNotification, setRebalanceNotification] = useState(null);
   const [isRebalancing, setIsRebalancing] = useState(false);
 
@@ -72,14 +75,12 @@ export default function App() {
     setIsRebalancing(true);
     setRebalanceNotification("AI Analyzing subject confidence scores...");
 
-    // Try backend rebalance endpoint first
     const backendResult = await API.rebalanceSchedule(topics);
 
     setTimeout(() => {
       if (backendResult && backendResult.rebalanced_topics) {
         setTopics(backendResult.rebalanced_topics);
       } else {
-        // Client-side AI fallback calculation: Inverse weighting based on (11 - confidence)
         const totalHours = topics.reduce((acc, t) => acc + Number(t.target_hours || 10), 0);
         const weights = topics.map(t => (11 - Number(t.confidence || 5)));
         const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
@@ -100,6 +101,34 @@ export default function App() {
       
       setTimeout(() => setRebalanceNotification(null), 5000);
     }, 800);
+  };
+
+  const handleUpdatePrediction = (topicName, predictedHours) => {
+    setTopics(prev => prev.map(t => {
+      if (t.name.toLowerCase().includes(topicName.toLowerCase())) {
+        return { ...t, target_hours: Math.ceil(predictedHours) };
+      }
+      return t;
+    }));
+    setRebalanceNotification(`⚡ ML Prediction Applied: ${topicName} target set to ${predictedHours}h.`);
+    setTimeout(() => setRebalanceNotification(null), 5000);
+  };
+
+  const handleFeedCVResults = (weakTopics) => {
+    if (!weakTopics || !weakTopics.length) return;
+    setTopics(prev => prev.map(t => {
+      const isWeak = weakTopics.some(w => w.toLowerCase().includes(t.name.toLowerCase()));
+      if (isWeak) {
+        return {
+          ...t,
+          target_hours: t.target_hours + 3,
+          confidence: Math.max(1, t.confidence - 2)
+        };
+      }
+      return t;
+    }));
+    setRebalanceNotification(`⚡ CV Test Feedback Applied: Boosted target hours for weak topics!`);
+    setTimeout(() => setRebalanceNotification(null), 5000);
   };
 
   const handleToggleStatus = (id) => {
@@ -138,6 +167,9 @@ export default function App() {
         apiStatus={apiStatus} 
       />
 
+      {/* Interactive System Flow Architecture Banner */}
+      <ArchitectureFlow />
+
       {/* Hero Banner & AI Rebalance Trigger */}
       <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-slate-800 shadow-2xl relative overflow-hidden">
         <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -147,13 +179,13 @@ export default function App() {
           <div>
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-3">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>AI Dynamic Study Workload Rebalancer</span>
+              <span>Unified Single Web Application (ML + CV Engines)</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Optimize Study Schedule with Intelligent AI
+              ChronoSense AI Study Load-Balancer
             </h1>
             <p className="text-slate-400 text-xs sm:text-sm mt-1 max-w-xl">
-              Chronosense automatically recalculates your weekly target hours based on subject confidence scores and deadline urgencies.
+              Student ➔ Frontend ➔ Backend ➔ ML & CV Engines ➔ Results ➔ Dynamic Load Balancer.
             </p>
           </div>
 
@@ -189,7 +221,31 @@ export default function App() {
           }`}
         >
           <LayoutDashboard className="w-4 h-4" />
-          <span>Dashboard Overview</span>
+          <span>Overview</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('ml_engine')}
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 ${
+            activeTab === 'ml_engine'
+              ? 'border-emerald-400 text-emerald-400 bg-slate-900/60'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Cpu className="w-4 h-4 text-emerald-400" />
+          <span>ML Engine (Prediction)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('cv_engine')}
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-t-xl transition-all border-b-2 ${
+            activeTab === 'cv_engine'
+              ? 'border-pink-400 text-pink-400 bg-slate-900/60'
+              : 'border-transparent text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Eye className="w-4 h-4 text-pink-400" />
+          <span>CV Engine (Vision AI Grading)</span>
         </button>
 
         <button
@@ -213,7 +269,7 @@ export default function App() {
           }`}
         >
           <BarChart3 className="w-4 h-4" />
-          <span>Analytics & Distribution</span>
+          <span>Analytics</span>
         </button>
 
         <button
@@ -225,7 +281,7 @@ export default function App() {
           }`}
         >
           <Clock className="w-4 h-4" />
-          <span>Focus & Pomodoro Timer</span>
+          <span>Focus Timer</span>
         </button>
       </div>
 
@@ -233,6 +289,8 @@ export default function App() {
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
+            <MLEngineCard topics={topics} onUpdatePrediction={handleUpdatePrediction} />
+            <CVEngineCard onFeedResultsToRebalance={handleFeedCVResults} />
             <TopicManager topics={topics} setTopics={setTopics} />
             <AnalyticsCharts topics={topics} />
           </div>
@@ -244,6 +302,14 @@ export default function App() {
             />
           </div>
         </div>
+      )}
+
+      {activeTab === 'ml_engine' && (
+        <MLEngineCard topics={topics} onUpdatePrediction={handleUpdatePrediction} />
+      )}
+
+      {activeTab === 'cv_engine' && (
+        <CVEngineCard onFeedResultsToRebalance={handleFeedCVResults} />
       )}
 
       {activeTab === 'topics' && (
@@ -268,4 +334,4 @@ export default function App() {
 
     </div>
   );
-}
+}
